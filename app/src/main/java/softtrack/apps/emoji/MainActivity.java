@@ -31,6 +31,7 @@ import android.util.Size;
 import android.util.SparseArray;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -53,6 +54,16 @@ public class MainActivity extends AppCompatActivity {
     public Button startBtn;
     public PreviewView previewView;
     public ImageView activeEmoji;
+    public ImageButton cameraSwitcher;
+    public CameraSelector cameraSelector;
+    public CameraSelector frontCamera;
+    public ImageView glasses;
+    public ImageView cap;
+    public ImageView clown;
+    public ImageView wig;
+    public ImageView beard;
+    public ImageView horns;
+    public ImageView pumpkin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,36 +83,78 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void initialize() {
+        cameraSwitcher = findViewById(R.id.cameraSwitcher);
         previewView = findViewById(R.id.previewView);
         activeEmoji = findViewById(R.id.activeEmoji);
-        cameraProviderFuture = ProcessCameraProvider.getInstance(this);
-        cameraProviderFuture.addListener(() -> {
-            try {
-                ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
-                Preview preview = new Preview.Builder().build();
-                ImageCapture imageCapture = new ImageCapture.Builder().setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY).build();
-                CameraSelector cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA;
-                preview.setSurfaceProvider(previewView.getSurfaceProvider());
-
-                ImageAnalysis imageAnalysis = new ImageAnalysis.Builder().setTargetResolution(new Size(1280, 720)).setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST).build();
-                imageAnalysis.setAnalyzer(ContextCompat.getMainExecutor(getApplicationContext()),  new ImageAnalysis.Analyzer() {
-                    @Override
-                    public void analyze(@NonNull ImageProxy imageProxy) {
-                        int rotationDegrees = imageProxy.getImageInfo().getRotationDegrees();
-                        @SuppressLint("UnsafeOptInUsageError") Image mediaImage = imageProxy.getImage();
-                        if (mediaImage != null) {
-                            InputImage image = InputImage.fromMediaImage(mediaImage, imageProxy.getImageInfo().getRotationDegrees());
-                            detectFaces();
-                        }
-                        imageProxy.close();
-                    }
-                });
-                cameraProvider.unbindAll();
-                cameraProvider.bindToLifecycle(((LifecycleOwner) this), cameraSelector, preview, imageCapture, imageAnalysis);
-            } catch(ExecutionException | InterruptedException e){
-
+        glasses = findViewById(R.id.glasses);
+        cap = findViewById(R.id.cap);
+        wig = findViewById(R.id.wig);
+        pumpkin = findViewById(R.id.pumpkin);
+        beard = findViewById(R.id.beard);
+        clown = findViewById(R.id.clown);
+        horns = findViewById(R.id.horns);
+        glasses.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                activateEmoji(view);
             }
-        }, ContextCompat.getMainExecutor(MainActivity.this));
+        });
+        cap.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                activateEmoji(view);
+            }
+        });
+        wig.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                activateEmoji(view);
+            }
+        });
+        pumpkin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                activateEmoji(view);
+            }
+        });
+        beard.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                activateEmoji(view);
+            }
+        });
+        clown.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                activateEmoji(view);
+            }
+        });
+        horns.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                activateEmoji(view);
+            }
+        });
+        cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA;
+        frontCamera = CameraSelector.DEFAULT_FRONT_CAMERA;
+        runCamera();
+        cameraSwitcher.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                boolean isSelfi = frontCamera.equals(cameraSelector);
+                if (isSelfi) {
+                    cameraSelector =  CameraSelector.DEFAULT_BACK_CAMERA;
+                } else {
+                    cameraSelector =  CameraSelector.DEFAULT_FRONT_CAMERA;
+                }
+                /*if (CameraSelector.DEFAULT_BACK_CAMERA.equals(cameraSelector)) {
+                    cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA;
+                } else if (CameraSelector.DEFAULT_FRONT_CAMERA.equals(cameraSelector)) {
+                    cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA;
+                }*/
+                runCamera();
+            }
+        });
     }
 
     public void detectFaces() {
@@ -125,6 +178,58 @@ public class MainActivity extends AppCompatActivity {
             activeEmoji.setVisibility(View.VISIBLE);
         } else {
              activeEmoji.setVisibility(View.GONE);
+        }
+    }
+
+    public void runCamera() {
+        cameraProviderFuture = ProcessCameraProvider.getInstance(this);
+        cameraProviderFuture.addListener(() -> {
+            try {
+                ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
+                Preview preview = new Preview.Builder().build();
+                ImageCapture imageCapture = new ImageCapture.Builder().setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY).build();
+                // cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA;
+                preview.setSurfaceProvider(previewView.getSurfaceProvider());
+
+                ImageAnalysis imageAnalysis = new ImageAnalysis.Builder().setTargetResolution(new Size(1280, 720)).setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST).build();
+                imageAnalysis.setAnalyzer(ContextCompat.getMainExecutor(getApplicationContext()),  new ImageAnalysis.Analyzer() {
+                    @Override
+                    public void analyze(@NonNull ImageProxy imageProxy) {
+                        int rotationDegrees = imageProxy.getImageInfo().getRotationDegrees();
+                        @SuppressLint("UnsafeOptInUsageError") Image mediaImage = imageProxy.getImage();
+                        if (mediaImage != null) {
+                            InputImage image = InputImage.fromMediaImage(mediaImage, imageProxy.getImageInfo().getRotationDegrees());
+                            detectFaces();
+                        }
+                        imageProxy.close();
+                    }
+                });
+                cameraProvider.unbindAll();
+                cameraProvider.bindToLifecycle(((LifecycleOwner) MainActivity.this), cameraSelector, preview, imageCapture, imageAnalysis);
+            } catch(ExecutionException | InterruptedException e){
+
+            }
+        }, ContextCompat.getMainExecutor(MainActivity.this));
+    }
+
+    public void activateEmoji(View rawEmoji) {
+//        ImageView emoji = (ImageView) rawEmoji;
+        CharSequence rawEmojiData = rawEmoji.getContentDescription();
+        String rawEmojiName = rawEmojiData.toString();
+        if (rawEmojiName == "glasses") {
+            activeEmoji.setImageResource(R.drawable.glasses);
+        } else if (rawEmojiName == "pumpkin") {
+            activeEmoji.setImageResource(R.drawable.pumpkin);
+        } else if (rawEmojiName == "beard") {
+            activeEmoji.setImageResource(R.drawable.beard);
+        } else if (rawEmojiName == "clown") {
+            activeEmoji.setImageResource(R.drawable.clown);
+        } else if (rawEmojiName == "wig") {
+            activeEmoji.setImageResource(R.drawable.wig);
+        } else if (rawEmojiName == "horns") {
+            activeEmoji.setImageResource(R.drawable.horns);
+        } else if (rawEmojiName == "cap") {
+            activeEmoji.setImageResource(R.drawable.cap);
         }
     }
 
